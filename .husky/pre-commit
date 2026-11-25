@@ -1,0 +1,4 @@
+# Blocks the commit unless everything passes:
+# type-check, lint, formatting, unit tests with the 90% coverage gate, and the production build.
+npm run check
+npm run build
