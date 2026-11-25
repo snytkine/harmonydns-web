@@ -41,6 +41,23 @@ describe('App', () => {
     expect(shots.map((shot) => shot.getAttribute('title'))).toEqual(shots.map(() => 'Click to enlarge'));
   });
 
+  it('has a privacy policy with what the App Store requires of a VPN app', () => {
+    renderApp('/privacy');
+    const policy = screen.getByRole('main');
+    const section = (name: string) => within(policy).getByRole('heading', { level: 2, name });
+
+    // Guideline 5.4: VPN apps must commit not to sell, use or disclose data to third parties.
+    expect(section('Our commitment')).toBeInTheDocument();
+    expect(policy).toHaveTextContent(/do not sell, use or disclose to third parties any data, for any purpose/);
+    // Guideline 5.1.1(i): what is kept, why and for how long, including the install record.
+    expect(section('Data the app keeps on your Mac')).toBeInTheDocument();
+    expect(within(policy).getByRole('table')).toHaveTextContent(/Install record/);
+    // Guideline 5.1.1(i): what is sent to third parties, and how to withdraw consent and delete data.
+    expect(section('How DNS queries are answered')).toBeInTheDocument();
+    expect(section('Withdrawing consent and deleting your data')).toBeInTheDocument();
+    expect(policy).toHaveTextContent(/System Settings → VPN/);
+  });
+
   it('opens a deep link served under a repository path, as on GitHub Pages', () => {
     renderApp('/harmonydns-web/support', '/harmonydns-web/');
     expect(pageTitle()).toHaveTextContent('Support');
