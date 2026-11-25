@@ -38,8 +38,16 @@ describe('ImageModal', () => {
 
   it('reports a close made by the browser, such as Escape', () => {
     const { onClose } = renderModal();
-    fireEvent(screen.getByRole('dialog'), new Event('close'));
+    const dialog = screen.getByRole('dialog');
+    dialog.removeAttribute('open');
+    fireEvent(dialog, new Event('close'));
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('ignores a late close event that arrives after the dialog was opened again', () => {
+    const { onClose } = renderModal();
+    fireEvent(screen.getByRole('dialog'), new Event('close'));
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it('closes the dialog when removed', () => {

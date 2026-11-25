@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { StrictMode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { Screenshot } from './Screenshot';
 
@@ -23,5 +24,17 @@ describe('Screenshot', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('stays open in StrictMode, where React mounts effects twice in development', async () => {
+    render(
+      <StrictMode>
+        <Screenshot image={image} alt="The logs view" />
+      </StrictMode>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'The logs view' }));
+    // Let the "close" event queued by StrictMode's unmount arrive, as it would in a browser.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+    expect(screen.getByRole('dialog', { name: 'The logs view' })).toHaveAttribute('open');
   });
 });

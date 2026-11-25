@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { ScreenshotImage } from '../config/screenshots';
 import { ImageModal } from './ImageModal';
 
@@ -10,6 +10,10 @@ interface ScreenshotProps {
 /** A small app screenshot that opens a larger version in a modal when clicked. */
 export function Screenshot({ image, alt }: ScreenshotProps) {
   const [open, setOpen] = useState(false);
+  // Stable, so the modal's effect does not close and reopen the dialog on every render.
+  const close = useCallback(() => {
+    setOpen(false);
+  }, []);
 
   return (
     <>
@@ -29,15 +33,7 @@ export function Screenshot({ image, alt }: ScreenshotProps) {
           </svg>
         </span>
       </button>
-      {open && (
-        <ImageModal
-          src={image.full}
-          alt={alt}
-          onClose={() => {
-            setOpen(false);
-          }}
-        />
-      )}
+      {open && <ImageModal src={image.full} alt={alt} onClose={close} />}
     </>
   );
 }

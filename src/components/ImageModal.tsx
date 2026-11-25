@@ -17,15 +17,23 @@ export function ImageModal({ src, alt, onClose }: ImageModalProps) {
 
   useEffect(() => {
     const dialog = ref.current;
-    dialog?.showModal();
-    return () => {
-      if (dialog?.open) dialog.close();
+    if (!dialog) return;
+    // Browsers fire "close" in a later task. In development StrictMode closes and reopens the dialog
+    // straight away, so that close event arrives while the dialog is open again and must be ignored.
+    const handleClose = () => {
+      if (!dialog.open) onClose();
     };
-  }, []);
+    dialog.addEventListener('close', handleClose);
+    if (!dialog.open) dialog.showModal();
+    return () => {
+      dialog.removeEventListener('close', handleClose);
+      if (dialog.open) dialog.close();
+    };
+  }, [onClose]);
 
   return createPortal(
     // Any click closes the zoomed image, the way Quick Look does; Escape and the close button work too.
-    <dialog ref={ref} className="lightbox" aria-label={alt} onClose={onClose} onClick={onClose}>
+    <dialog ref={ref} className="lightbox" aria-label={alt} onClick={onClose}>
       <figure className="lightbox__figure">
         <img className="lightbox__image" src={src} alt={alt} />
         <figcaption className="lightbox__caption">{alt}</figcaption>

@@ -15,13 +15,15 @@ export function stubMatchMedia(matches: (query: string) => boolean = () => false
   );
 }
 
-// jsdom has <dialog> but not its modal methods; these mimic what browsers do.
+// jsdom has <dialog> but not its modal methods; these mimic what browsers do, including firing
+// "close" in a later task rather than during close() itself.
 HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
   this.setAttribute('open', '');
 };
 HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+  if (!this.open) return;
   this.removeAttribute('open');
-  this.dispatchEvent(new Event('close'));
+  setTimeout(() => this.dispatchEvent(new Event('close')), 0);
 };
 
 beforeEach(() => {
